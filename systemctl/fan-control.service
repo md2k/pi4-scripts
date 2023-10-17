@@ -1,0 +1,18 @@
+[Unit]
+Description=Fan Control
+
+[Service]
+Type=simple
+#WorkingDirectory=/opt/fun_control
+ExecStart=/usr/bin/python3 -u /opt/fan_control/fan_control.py | /usr/bin/systemd-cat -t fun-control
+User=root
+TimeoutStartSec=0
+#Restart=on-failure
+Restart=always
+StartLimitInterval=60
+StartLimitBurst=10
+# to get stdoput data
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

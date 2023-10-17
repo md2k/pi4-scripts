@@ -67,9 +67,10 @@ def main():
     fgPin = 17     # Tachometer Pin
     pwrFreq = 250  # in Khz (was 1000 from example)
     waitTime = 1   # secconds
+    waitStats = 5  # scounter to wait before print stats
 
-    minTemp = 50
-    maxTemp = 100
+    minTemp = 55
+    maxTemp = 90
     fanLow = 10
     fanHigh = 100
     fanMax = 100
@@ -86,16 +87,31 @@ def main():
 
         # counter to delay changes for fun speed
         count = 0
+        scount = 0
+        offdelay = 0
         while True:
             temp = float(getCpuTemperature())
             speed = handleFanSpeed(temp, minTemp, maxTemp, fanLow, fanHigh, fanMax)
 
+            # count here used to delay change
             if count > 0:
+
+                # we use it as delay before switch off Fan, if speed = 0 more than 30 cycles (waitTime*30), then we set 10% of fun speed
+                # after 30 cycles we passing real value
+                if speed == 0 and offdelay < 30:
+                    speed = 10
+                elif speed > 0:
+                    offdelay = 0
+
                 pwm.ChangeDutyCycle(speed)
                 count = 0
 
-            print(f"\rFan power: {round(speed,1)}% | Fun speed: {rpm} RPM | CPU Temp: {temp} C", end="")
+            if scount > waitStats:
+                print(f"Fan power: {round(speed,1)}% | Fun speed: {rpm} RPM | CPU Temp: {temp} C\n", end="", flush=True)
+                scount = 0
 
+            offdelay = offdelay+1
+            scount = scount+1
             count = count+1
             rpm = 0
             time.sleep(waitTime)
